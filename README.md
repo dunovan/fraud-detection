@@ -7,5 +7,5 @@ NimbusPay is a digital payments company. Fraud losses increased during the last 
 ```bash
 pip install -r requirements.txt
 python src/analyze_fraud.py
-pytest
+python -m pytest
 ```
