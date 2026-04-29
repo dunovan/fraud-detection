@@ -101,3 +101,59 @@ def test_score_clamped_at_100():
         prior_chargebacks=3,
     )
     assert score_transaction(tx) == 100
+
+
+def test_score_floor_at_zero():
+    assert score_transaction(_base_tx()) == 0
+
+
+# --- threshold boundary tests (catch off-by-one regressions) ---
+
+def test_device_risk_moderate_tier_fires_at_40():
+    assert score_transaction(_base_tx(device_risk_score=40)) > score_transaction(_base_tx(device_risk_score=39))
+
+
+def test_device_risk_high_tier_fires_at_70():
+    assert score_transaction(_base_tx(device_risk_score=70)) > score_transaction(_base_tx(device_risk_score=69))
+
+
+def test_amount_moderate_tier_fires_at_500():
+    assert score_transaction(_base_tx(amount_usd=500.0)) > score_transaction(_base_tx(amount_usd=499.99))
+
+
+def test_amount_high_tier_fires_at_1000():
+    assert score_transaction(_base_tx(amount_usd=1000.0)) > score_transaction(_base_tx(amount_usd=999.99))
+
+
+def test_velocity_moderate_tier_fires_at_3():
+    assert score_transaction(_base_tx(velocity_24h=3)) > score_transaction(_base_tx(velocity_24h=2))
+
+
+def test_velocity_high_tier_fires_at_6():
+    assert score_transaction(_base_tx(velocity_24h=6)) > score_transaction(_base_tx(velocity_24h=5))
+
+
+def test_failed_logins_moderate_tier_fires_at_2():
+    assert score_transaction(_base_tx(failed_logins_24h=2)) > score_transaction(_base_tx(failed_logins_24h=1))
+
+
+def test_failed_logins_high_tier_fires_at_5():
+    assert score_transaction(_base_tx(failed_logins_24h=5)) > score_transaction(_base_tx(failed_logins_24h=4))
+
+
+# --- label boundary tests ---
+
+def test_label_boundary_29_is_low():
+    assert label_risk(29) == "low"
+
+
+def test_label_boundary_30_is_medium():
+    assert label_risk(30) == "medium"
+
+
+def test_label_boundary_59_is_medium():
+    assert label_risk(59) == "medium"
+
+
+def test_label_boundary_60_is_high():
+    assert label_risk(60) == "high"
